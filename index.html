@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kameradan rasm olish va Telegramga yuborish</title>
+  <style>
+    video, img {
+      width: 300px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <video id="video" autoplay></video>
+  <button onclick="takePhoto()">Rasmga olish va yuborish</button>
+  <canvas id="canvas" width="300" style="display:none;"></canvas>
+  <img id="photo" />
+
+  <script>
+    const BOT_TOKEN = '8452849927:AAGFXTIL0YSCX9FhSrlrNcg5L4T4FqrfUUA';
+    const CHAT_ID = '-1002596639527';
+    const CORS_PROXY = 'https://corsproxy.io/?';
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photo = document.getElementById('photo');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      });
+
+    function takePhoto() {
+      const context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL('image/png');
+      photo.src = imageData;
+
+      // Rasmni Telegramga yuborish
+      const url = `${CORS_PROXY}https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          photo: imageData,
+          caption: 'Brauzerdan yuborildi 📸'
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert("Yuborildi ✅");
+        console.log(data);
+      })
+      .catch(err => {
+        console.error('Xatolik:', err);
+        alert("Xatolik ❌");
+      });
+    }
+  </script>
+</body>
+</html>
